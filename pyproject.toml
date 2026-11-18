@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slider-captcha-kit"
+version = "0.1.0"
+description = "Local image matching and configurable Playwright integration for horizontal slider puzzles"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Slider Captcha Kit contributors"}]
+dependencies = ["numpy>=2.2,<3", "Pillow>=11,<13"]
+classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent"]
+
+[project.optional-dependencies]
+browser = ["playwright>=1.50,<2"]
+dev = ["pytest>=8.3,<10", "playwright>=1.50,<2", "build>=1.2,<2"]
+
+[project.scripts]
+slider-kit = "slider_captcha_kit.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+slider_captcha_kit = ["assets/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = ["browser: real browser integration checks"]

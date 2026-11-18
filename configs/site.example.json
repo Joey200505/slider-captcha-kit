@@ -1,0 +1,18 @@
+{
+  "selectors": {
+    "background": ".puzzle-background img",
+    "piece": ".puzzle-piece img",
+    "piece_container": ".puzzle-piece",
+    "panel": ".puzzle-background",
+    "handle": ".slider-handle",
+    "refresh": ".puzzle-refresh",
+    "failure": ".puzzle-error:visible",
+    "success": ".verification-success:visible",
+    "drag_ratio": 1.0
+  },
+  "matching": {
+    "method": "outline", "min_score": 0.8, "min_margin": 0.03,
+    "candidate_separation": 1
+  },
+  "execution": {"max_attempts": 3, "detection_timeout": 10, "result_timeout": 8}
+}

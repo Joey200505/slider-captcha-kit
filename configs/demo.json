@@ -1,0 +1,13 @@
+{
+  "selectors": {
+    "background": "#background",
+    "piece": "#piece",
+    "handle": "#handle",
+    "panel": "#panel",
+    "refresh": "#refresh",
+    "failure": "#failure",
+    "success": "#verified"
+  },
+  "matching": {"method": "outline", "min_score": 0.8, "min_margin": 0.03},
+  "execution": {"max_attempts": 3, "detection_timeout": 5, "result_timeout": 8}
+}

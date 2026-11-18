@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slider Captcha Kit · 本地演示</title>
+<style>
+:root{font-family:Inter,"Segoe UI","Microsoft YaHei",sans-serif;color:#172b3a;background:#f3f5f4}*{box-sizing:border-box}body{margin:0}.top{background:#123a32;color:#fff;padding:26px 7vw;display:flex;justify-content:space-between;align-items:center}.brand{font-size:22px;font-weight:700}.tag{font:12px ui-monospace,monospace;letter-spacing:1px;color:#b4dacf}main{max-width:1040px;margin:65px auto;padding:0 24px}.eyebrow{color:#557467;letter-spacing:2px;font-size:12px}h1{font-size:38px;margin:12px 0 14px;letter-spacing:-1px}.intro{color:#61716a;line-height:1.8;max-width:700px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:35px}.card{background:white;border:1px solid #dde5df;border-radius:14px;padding:25px}.label{font-size:12px;color:#697e72;text-transform:uppercase;letter-spacing:1px}.card h2{font-size:20px;margin:10px 0 22px}#challenge{width:360px;max-width:100%}#panel{width:100%;aspect-ratio:2;position:relative;overflow:hidden;border-radius:8px;background:#e6ede8}#background{width:100%;height:100%;display:block}#piece{position:absolute;top:0;left:0;width:12.222222%;height:100%;pointer-events:none}.track{height:44px;margin-top:18px;background:#edf2ef;border:1px solid #d3ded6;border-radius:6px;position:relative;display:flex;align-items:center;justify-content:center;color:#718777;font-size:13px}#handle{position:absolute;left:0;top:-1px;width:44px;height:44px;background:#276b56;border:0;border-radius:6px;color:white;font-size:22px;cursor:grab;touch-action:none}button{font:inherit}#refresh{margin-top:18px;border:1px solid #d9e3dc;border-radius:6px;background:#fff;padding:7px 13px;cursor:pointer;color:#3b6050}#verified{padding:40px 15px;background:#e8f6ec;border:1px solid #bfdac7;border-radius:8px;color:#1d6e3c;font-size:20px;text-align:center}#failure{color:#a53c29;margin-top:14px;font-size:13px}pre{background:#f5f7f5;padding:16px;border-radius:8px;overflow:auto;line-height:1.8;font-size:12px;color:#3d5546}.note{font-size:13px;line-height:1.9;color:#687a6e;margin:20px 0 0}.status{margin-top:22px;font-size:13px;color:#6a7e70}.dot{display:inline-block;width:7px;height:7px;background:#2c9465;border-radius:50%;margin-right:7px}[hidden]{display:none!important}footer{margin-top:35px;color:#88958c;font-size:12px;display:flex;justify-content:space-between}a{color:#276b56}@media(max-width:800px){.grid{grid-template-columns:1fr}main{margin:35px auto}h1{font-size:30px}.tag{display:none}}body.embed{background:#fff}body.embed .top,body.embed .title,body.embed .guide,body.embed footer{display:none}body.embed main{padding:5px;margin:0}body.embed .grid{display:block;margin:0}body.embed .card{padding:10px;border:0}body.embed .card h2,body.embed .card .label{display:none}
+</style></head><body>
+<header class="top"><div class="brand">Slider Captcha Kit</div><div class="tag">LOCAL FIRST / PYTHON / MIT</div></header>
+<main><div class="title"><div class="eyebrow">交互演示 / 0.1.0</div><h1>图片识别，接回你的自动化。</h1><p class="intro">这个页面生成合成拼图，拖动结果由本地服务校验。你可以手动拖动，也可以用项目中的 Python 接入示例自动完成。</p></div>
+<div class="grid"><section class="card"><div class="label">Synthetic challenge</div><h2>把拼图拖到正确位置</h2>
+<div id="challenge"><div id="panel"><img id="background" alt="拼图背景"><img id="piece" alt="透明拼图块"></div><div class="track"><span>按住滑块，向右拖动</span><button id="handle" aria-label="拖动滑块">→</button></div><div id="failure" hidden>位置不正确，请刷新后重试。</div><button id="refresh">换一张图片 ↻</button></div>
+<div id="verified" hidden>✓ 验证通过</div><div class="status"><span class="dot"></span><span id="status">正在生成本地图片…</span></div>
+</section><section class="card guide"><div class="label">Try the adapter</div><h2>用 Python 自动完成</h2><pre>slider-kit run \
+  --url http://127.0.0.1:18765 \
+  --config configs/demo.json</pre><p class="note">Windows 终端可把命令写在同一行。首次使用先安装浏览器：<br><code>python -m playwright install chromium</code></p><p class="note">适配其他网站时，替换图片、拖动按钮与成功状态的选择器。图片在本地分析，示例不需要 API Key。</p></section></div>
+<footer><span>本页只使用程序生成的演示图片</span><span>MIT · v0.1.0</span></footer></main>
+<script>
+const params=new URLSearchParams(location.search);
+if(params.has('embed'))document.body.classList.add('embed');
+if(params.has('frame')){document.querySelector('.grid').innerHTML='<section class="card"><iframe id="puzzle-frame" title="拼图演示" src="/?embed=1" style="width:100%;height:355px;border:0"></iframe></section>';}
+else{(async()=>{
+let id,dragging=false,origin=0,dx=0,hovered=false,loading=false;
+const el=id=>document.getElementById(id);
+const imageMode=params.get('image');
+if(imageMode==='canvas'){for(const name of ['background','piece']){const old=el(name),canvas=document.createElement('canvas');canvas.id=name;old.replaceWith(canvas);}}
+async function paint(name,src){const node=el(name);if(node.tagName==='CANVAS'){const image=new Image();image.src=src;await image.decode();node.width=image.naturalWidth;node.height=image.naturalHeight;node.getContext('2d').drawImage(image,0,0);}else{node.src=src;await node.decode();}}
+async function refresh(){if(loading)return;loading=true;el('challenge').hidden=false;el('verified').hidden=true;el('failure').hidden=true;dx=0;el('piece').style.left='0px';el('handle').style.left='0px';const p=await(await fetch('/challenge')).json();id=p.id;await Promise.all(['background','piece'].map(name=>paint(name,imageMode==='remote'?`/image/${id}/${name}.png`:p[name])));el('status').textContent='图片已就绪 · 等待拖动';loading=false;}
+el('refresh').onclick=refresh;
+el('handle').addEventListener('pointerenter',()=>{if(params.has('refresh_on_hover')&&!hovered){hovered=true;refresh();}});
+el('handle').addEventListener('pointerdown',event=>{if(loading)return;dragging=true;origin=event.clientX;el('failure').hidden=true;el('handle').setPointerCapture(event.pointerId);});
+document.addEventListener('pointermove',event=>{if(!dragging)return;const max=el('panel').getBoundingClientRect().width-el('piece').getBoundingClientRect().width;dx=Math.min(max,Math.max(0,event.clientX-origin));el('piece').style.left=dx+'px';el('handle').style.left=dx+'px';});
+document.addEventListener('pointerup',async()=>{if(!dragging)return;dragging=false;if(params.has('hide_only')){el('challenge').hidden=true;return;}const width=el('panel').getBoundingClientRect().width;const p=await(await fetch('/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,offset:dx*360/width})})).json();if(p.accepted){el('challenge').hidden=true;el('verified').hidden=false;el('status').textContent='本地服务已确认拖动结果';}else{el('failure').hidden=false;el('status').textContent='本地服务未接受本次结果';}});
+await refresh();
+})().catch(()=>{document.getElementById('status').textContent='图片加载失败，请刷新页面';});}
+</script></body></html>
