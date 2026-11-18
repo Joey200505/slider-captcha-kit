@@ -1,6 +1,7 @@
 import json
 import io
 from PIL import Image
+from PIL.PngImagePlugin import PngInfo
 
 from slider_captcha_kit.samples import SampleStore
 from slider_captcha_kit.synthetic import puzzle
@@ -15,7 +16,28 @@ def test_only_explicit_safe_metadata_is_saved(tmp_path):
     text = (tmp_path/"attempts.jsonl").read_text("utf-8")
     assert "DO_NOT_SAVE" not in text and "private.invalid" not in text
     assert json.loads(text)["score"] == 1.0
-    assert (tmp_path/receipt["background_file"]).read_bytes() == background
+    with Image.open(io.BytesIO(background)) as original:
+        with Image.open(tmp_path/receipt["background_file"]) as saved:
+            assert saved.convert("RGBA").tobytes() == original.convert("RGBA").tobytes()
+
+
+def test_png_metadata_is_removed_without_changing_pixels(tmp_path):
+    image = Image.new("RGBA", (20,20), (100,80,50,128))
+    metadata = PngInfo()
+    metadata.add_text("Comment", "PRIVATE_TEST_VALUE")
+    exif = Image.Exif()
+    exif[270] = "PRIVATE_TEST_VALUE"
+    stream = io.BytesIO()
+    image.save(stream, format="PNG", pnginfo=metadata, exif=exif)
+    receipt = SampleStore(tmp_path).capture(stream.getvalue(),stream.getvalue())
+    assert receipt is not None
+    for name in receipt.values():
+        path = tmp_path/name
+        assert b"PRIVATE_TEST_VALUE" not in path.read_bytes()
+        with Image.open(path) as saved:
+            assert saved.info == {}
+            assert not saved.getexif()
+            assert saved.convert("RGBA").tobytes() == image.tobytes()
 
 
 def test_readonly_destination_does_not_break_login(tmp_path):

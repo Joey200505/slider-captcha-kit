@@ -12,3 +12,6 @@ private/
 !.env.example
 playwright-report/
 test-results/
+BUILD-MANIFEST.json
+configs/*.local.json
+configs/site.json
