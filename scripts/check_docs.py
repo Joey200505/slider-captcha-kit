@@ -5,7 +5,7 @@ from urllib.parse import unquote, urlsplit
 
 root=Path(__file__).resolve().parents[1]
 errors=[]
-documents=[p for p in root.rglob("*.md") if not any(v in {".git","build","dist"} or v.endswith(".egg-info") for v in p.relative_to(root).parts)]
+documents=[p for p in root.rglob("*.md") if not any(v in {".git",".venv","build","dist","private","samples"} or v.endswith(".egg-info") for v in p.relative_to(root).parts)]
 for path in documents:
     for target in re.findall(r"\]\(([^)]+)\)",path.read_text(encoding="utf-8")):
         target=target.strip().strip("<>")

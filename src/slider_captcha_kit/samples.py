@@ -28,10 +28,11 @@ class SampleStore:
                 stem = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")+"_"+uuid4().hex[:8]
                 receipt = {"background_file":stem+"_background.png", "piece_file":stem+"_piece.png"}
                 for key,content in [("background_file",background),("piece_file",piece)]:
-                    if not content.startswith(b"\x89PNG\r\n\x1a\n"):
-                        normalized = io.BytesIO()
-                        Image.fromarray(pixels(content,"RGBA")).save(normalized,format="PNG")
-                        content = normalized.getvalue()
+                    # Rebuild from pixels even for PNG inputs: the original
+                    # container may carry private text or EXIF metadata.
+                    normalized = io.BytesIO()
+                    Image.fromarray(pixels(content,"RGBA")).save(normalized,format="PNG")
+                    content = normalized.getvalue()
                     with (self.directory/receipt[key]).open("xb") as stream:
                         stream.write(content)
                 return receipt

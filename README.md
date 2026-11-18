@@ -1,5 +1,10 @@
 # Slider Captcha Kit
 
+[![Tests](https://github.com/Joey200505/slider-captcha-kit/actions/workflows/tests.yml/badge.svg)](https://github.com/Joey200505/slider-captcha-kit/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+[English](README.en.md) · [问题反馈](https://github.com/Joey200505/slider-captcha-kit/issues) · [贡献指南](CONTRIBUTING.md)
+
 可复用的**横向滑块拼图识别与自动拖动工具**。Python 3.11+，MIT 许可证，图片在本地分析，不需要 API Key。
 
 把图片识别、拖动轨迹和网站接入分开。换网站时配置选择器；已有 Playwright 爬虫只需在验证码出现时调用一次，原来的登录、定时调度和采集代码继续由你的程序负责。
@@ -19,7 +24,14 @@
 
 ## 三分钟运行本地演示
 
-Windows PowerShell，在解压后的项目目录运行：
+先获取源码：
+
+```sh
+git clone https://github.com/Joey200505/slider-captcha-kit.git
+cd slider-captcha-kit
+```
+
+Windows PowerShell，在项目目录运行：
 
 ```powershell
 python -m venv .venv
@@ -125,7 +137,7 @@ result = solve(page, config, options=options)
 result = solve(page, config, options=SolveOptions(enabled=False))
 ```
 
-样本含图片和 `attempts.jsonl`，不保存 URL、DOM、Cookie、账号、密码或任意异常文本。实际站点样本属于你的运行数据，不应混进源码或提交公开仓库。CLI 的 `--samples ./private/samples` 开启相同记录。
+样本含图片和 `attempts.jsonl`；图片重新编码以清除内嵌文本和 EXIF 元数据，日志不保存 URL、DOM、Cookie、账号、密码或任意异常文本。实际站点样本属于你的运行数据，不应混进源码或提交公开仓库。CLI 的 `--samples ./private/samples` 开启相同记录。
 
 CLI 的 `--prepare` 会等你手工打开验证码后再识别；`--keep-open` 会保留浏览器直到按回车。无人值守任务建议直接调用库，由原调度系统处理返回结果。
 
@@ -142,7 +154,7 @@ python -m build
 
 本机若只装了 Edge，可设置 `$env:SLIDER_KIT_TEST_BROWSER='msedge'` 后运行测试。没有浏览器时集成测试会明确 skip，不能把 skip 当作真实浏览器验证通过。自动化覆盖像素匹配、歧义、缩放、轨迹边界、图片刷新、iframe、普通图片/Canvas、服务端结果确认和本地日志字段。
 
-[验证记录](docs/verification.md)说明当前压缩包实际运行过的检查。仅在自有站点或获授权的账号与环境中使用；保持目标站点允许的访问频率。
+[验证记录](docs/verification.md)说明实际运行过的检查。仅在自有站点或获授权的账号与环境中使用；保持目标站点允许的访问频率。
 
 ## 目录
 
@@ -156,4 +168,4 @@ scripts/                 可重复生成源码压缩包
 .github/workflows/       GitHub 测试和构建流程
 ```
 
-开源许可：[MIT](LICENSE)。第三方依赖说明：[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。此交付为本地源码包，尚未推送公开 GitHub 或发布到 PyPI。
+开源许可：[MIT](LICENSE)。第三方依赖说明：[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。源码托管于 [GitHub](https://github.com/Joey200505/slider-captcha-kit)，目前从源码安装。

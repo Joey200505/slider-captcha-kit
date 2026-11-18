@@ -1,44 +1,44 @@
 # 0.1.0 验证记录
 
-核验日期：2026-11-18。范围为本独立项目的源码、图片接口、Playwright 适配器、本地演示与安装产物。
+核验日期：2026-11-18。范围为公开仓库中的图片接口、Playwright 适配器、本地演示、样本记录和发行包。
 
-结果：**39 项测试通过，无 skip**。wheel 和源码发行包构建通过，独立虚拟环境导入和演示资源检查通过。
+## 本地验证
 
-## 实际运行环境
+**53 项测试通过，无 skip**：图片、CLI、样本与真实浏览器测试 40 项，源码打包测试 13 项。
 
-- Windows，Python 3.13.5。
-- NumPy 2.4.4，Pillow 11.1.0，Playwright 1.58.0，pytest 8.3.4。
-- 真实浏览器测试使用本机 Microsoft Edge 的 headless 模式。
-- 所有浏览器自动化针对本项目本地演示站；没有在本批重新访问外部业务站点。
-
-## 验证命令
+- Windows，Python 3.11.9。
+- NumPy 2.4.6、Pillow 12.3.0、Playwright 1.65.2、pytest 9.2.0、build 1.6.1。
+- 真实浏览器使用本机 Microsoft Edge 的 headless 模式，仅访问本项目合成图片演示站。
+- 演示服务绑定 `0.0.0.0:18765`，通过本机局域网 IP 调用 CLI，服务端确认 `status=solved`、`passed=true`。
 
 ```powershell
 $env:SLIDER_KIT_TEST_BROWSER='msedge'
-python -m pytest -q
-python -m pip wheel . --no-deps --no-build-isolation --wheel-dir ../slider-kit-build
+python -m pytest -q tests/test_browser.py tests/test_cli.py tests/test_matching.py tests/test_samples.py
+python -m pytest -q tests/test_package.py
 python scripts/check_docs.py
+python -m build
+python scripts/package.py --output dist/slider-captcha-kit-v0.1.0.zip
 git diff --check
 ```
 
-另在独立虚拟环境安装构建出的 wheel，使用 `python -I` 检查包导入和随包演示 HTML 资源，并实际运行安装后的 `slider-kit run`，本地服务返回 `solved`、`passed=true`；该环境通过 `--system-site-packages` 复用已装依赖，没有假称完成隔离的网络依赖安装。
+wheel 和源码发行包构建完成后，在独立虚拟环境安装 wheel 并用 `python -I` 检查包导入、演示 HTML 资源和安装后的 CLI；依赖从公开包源安装。源码 ZIP 包含逐文件 SHA-256 清单，并生成整个 ZIP 的 SHA-256 文件。
 
-## 验证边界
+## 覆盖范围
 
-- 覆盖白色轮廓、透明蒙版纹理、低分、歧义、裁剪拼图纵向位置、图片大小与搜索计算量限制。
-- 覆盖有界轨迹、正确终点、过冲边界、CSS 缩放与初始横向偏移。
-- 覆盖主页面、自动扫描 iframe、显式 iframe、Base64、普通同源图片及 Canvas。
-- 使用真实鼠标事件拖动，由本地 HTTP 服务校验结果；滑块单独消失但未获确认时不能成功。
-- 验证鼠标移入后同步刷新图片会在按下前被发现，换图后才重试；图片尚未加载时不会误消耗一次识别尝试。
-- 验证本地样本可选、日志字段白名单、写盘失败不阻断和 JPEG 样本规范化为 PNG。
-- 使用原运行机保留的五组成功样本做离线回归：原偏移 182、108、225、244、225；独立包输出全部一致。真实图片未复制进项目或压缩包。
+- 白色轮廓、透明蒙版纹理、低分、歧义、裁剪拼图纵向位置、图像尺寸与搜索计算量限制。
+- 有界轨迹、正确终点、过冲边界、CSS 缩放与初始横向偏移。
+- 主页面、自动扫描 iframe、显式 iframe、Base64、普通同源图片及 Canvas。
+- 真实鼠标事件拖动与本地 HTTP 服务确认；滑块单独消失不能判为成功。
+- 鼠标移入导致图片刷新时，在按下前发现并重试。
+- 可选样本、日志字段白名单、写盘失败处理、JPEG 转 PNG、PNG 文本和 EXIF 清除，同时保持 RGBA 像素。
+- 源码 ZIP 仅收录逐项声明的文件，排除未声明的 `.env`、本地 JSON 配置和 Python 文件；拒绝无效路径、重复或缺失声明，校验哈希和可重复构建。
 
-GitHub CI 已提供 Python 3.11/3.13 + Ubuntu Chromium 测试配置，但未推送仓库，因此没有把未来 CI 当作已执行结果。其他网站、其他验证码形态及跨平台浏览器通过率仍需分别验收。
+本轮未使用业务站点账号、数据库或真实验证码图片。图片夹具与合成函数一致，不含文本或 EXIF；公开文件未发现密钥和业务连接信息。
 
-## 代码自评
+## 持续集成与代码审查
 
-自评范围：`src/`、`configs/`、`examples/`、`tests/`、构建和源码打包脚本。此记录是同一作者自评，不是独立审查批准。
+[GitHub Actions](https://github.com/Joey200505/slider-captcha-kit/actions/workflows/tests.yml) 在 push 和 PR 中执行 Python 3.11/3.13 + Ubuntu Chromium 测试、文档链接检查、发行包构建和源码 ZIP 打包；实际运行结果以该页面记录为准。
 
-关键不变量：只对匹配成功且无歧义的图片执行拖动；按下前检查图片；一次调用最多三次；必须正向确认成功；不携带账户登录逻辑、内部主机、数据库、真实图片或密钥；不发起模型调用。
+独立代码审查覆盖源码、测试、打包、配置和文档。发现的 PNG 元数据保留与递归打包私有文件风险已修复并补充回归测试；发布准备通过 PR 复核后合并。
 
-本次未发现尚未修复的阻断问题。没有验证外部站点兼容性、异步 Playwright、Selenium、CSS background-image 或封闭 Shadow DOM；这些限制已在 [适配指南](adapting.md)列出。
+其他网站、异步 Playwright、Selenium、CSS background-image、封闭 Shadow DOM 和其他验证码形态未在本轮验证，适配限制见 [适配指南](adapting.md)。
